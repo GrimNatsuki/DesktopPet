@@ -56,7 +56,7 @@ public:
 	}
 	~Entity()
 	{
-		std::cout << "Entity '" << name << "' is destroyed" << std::endl;
+		std::cout << "Entity '" << name << "' destroyed" << std::endl;
 		SDL_DestroyTexture(tex);
 		SDL_DestroySurface(surface);
 	}
