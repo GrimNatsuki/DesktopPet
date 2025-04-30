@@ -4,6 +4,7 @@
 #include <vector>
 #include <Windows.h>
 #include "SDL3/SDL.h"
+#include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
 #include "Entity.h"
 
@@ -38,7 +39,7 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 
 	renderer = SDL_CreateRenderer(window, NULL);
 
-	Entity Cartethyia = {"Cartethyia",*window, *renderer, "tex/cartethiyaBitmap.bmp", 4, 2, spawnTime};
+	Entity Cartethyia = {"Cartethyia",*window, *renderer, "tex/cartethiyaSpriteMap.png", 4, 2, spawnTime};
 
 	SDL_Surface* exitButtonSurface = nullptr; 
 	SDL_Texture* exitButtonTexture = nullptr;

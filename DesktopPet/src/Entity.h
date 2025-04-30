@@ -3,6 +3,7 @@
 #include <chrono>
 #include <vector>
 #include "SDL3/SDL.h"
+#include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
 
 using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
@@ -36,10 +37,11 @@ private:
 	int displaySpriteIndices[5] = {0, 0, 0, 0, 0};
 
 public:
-	Entity(const char* name, SDL_Window& window, SDL_Renderer& renderer, const char* bitmapFile, int spriteRowCount, int spriteColumnCount, timePoint spawnTime)
+	Entity(const char* name, SDL_Window& window, SDL_Renderer& renderer, const char* filePath, int spriteRowCount, int spriteColumnCount, timePoint spawnTime)
 		:name(name), window(&window), renderer(&renderer), spawnTime(spawnTime)
 	{
-		surface = SDL_LoadBMP(bitmapFile);
+		//surface = SDL_LoadBMP(filePath);
+		surface = IMG_Load(filePath);
 		tex = SDL_CreateTextureFromSurface(&renderer, surface);
 		for (int i = 0; i < spriteColumnCount;i++)
 		{
