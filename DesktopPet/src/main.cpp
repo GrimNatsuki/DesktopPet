@@ -16,8 +16,16 @@ void renderClear(SDL_Renderer* renderer, const int& r, const int& g, const int& 
 	SDL_RenderClear(renderer);
 }
 
-int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)*/
+int 
+main()
+//WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+
 	timePoint spawnTime = std::chrono::steady_clock::now();
 	timePoint currentTime;
 	int64_t elapsedTimeMilliseconds;
@@ -34,7 +42,7 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 
 	unsigned int windowWidth = 128;
 	unsigned int windowHeight = 128;
-	window = SDL_CreateWindow("Cartethyia window", windowWidth, windowHeight, 
+	window = SDL_CreateWindow("Cartethyia window",windowWidth, windowHeight,
 		 SDL_WINDOW_TRANSPARENT | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP);
 
 	renderer = SDL_CreateRenderer(window, NULL);
@@ -49,9 +57,11 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 	bool showPopup = false;
 
 	bool CartethyiaIsHeld = false;
+	bool isFalling = true;
 
 	unsigned int spriteIndex = 0;
 	int spriteLoopcount = 0;
+
 
 	float mouseXPos;
 	float mouseYPos;
@@ -85,8 +95,7 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 				keyBuffer.erase(event.key.key);
 			}
 
-
-			if (event.button.button == SDL_BUTTON_LEFT)
+			if (event.button.button == SDL_BUTTON_LEFT &&CartethyiaIsHeld && !isFalling)
 			{
 				Cartethyia.mouseDrag({ mouseXPos, mouseYPos });
 				if (lastMouseXPos > mouseXPos)
@@ -97,15 +106,7 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 				{
 					Cartethyia.smoothRotate(12);
 				}
-				if (Cartethyia.isHeld(event))
-				{
-					CartethyiaIsHeld = true;
-					showPopup = false;
-				}
-				else if (Cartethyia.isReleased(event))
-				{
-					CartethyiaIsHeld = false;
-				}
+				showPopup = false;
 			}
 			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
 			{
@@ -120,6 +121,10 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 						showPopup = true;
 					}
 				}
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					CartethyiaIsHeld = true;
+				}
 				clickedWindow = SDL_GetWindowFromID(event.button.windowID);
 				if (clickedWindow == popup && event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -128,8 +133,32 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 				}
 
 			}
+			if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					CartethyiaIsHeld = false;
+				}
+			}
 		}
-
+		/*
+		if (keyBuffer.find(SDLK_W) != keyBuffer.end())
+		{
+			Cartethyia.moveUp();
+		}
+		if (keyBuffer.find(SDLK_A) != keyBuffer.end())
+		{
+			Cartethyia.moveLeft();
+		}
+		if (keyBuffer.find(SDLK_S) != keyBuffer.end())
+		{
+			Cartethyia.moveDown();
+		}
+		if (keyBuffer.find(SDLK_D)!=keyBuffer.end())
+		{
+			Cartethyia.moveRight();
+		}
+		*/
 		if (lastMouseXPos!= mouseXPos || lastMouseYPos!= mouseYPos)
 		{
 			lastMouseXPos = mouseXPos;
@@ -149,6 +178,15 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 		}
 		else
 		{
+			if (Cartethyia.getPosition().y < Cartethyia.getGround())
+			{
+				isFalling = true;
+			}
+
+			if (isFalling)
+			{
+				Cartethyia.fall(isFalling, currentTime);
+			}
 			Cartethyia.breath(currentTime);
 			Cartethyia.display();
 		}
@@ -171,7 +209,6 @@ int main()/*WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR l
 			popup = nullptr;
 			popupRenderer = nullptr;
 		}
-		
 
 		SDL_FRect srcExit = { 0, 0, 16, 16 };
 		SDL_FRect dsExit = { 0, 0, 16, 16 };

@@ -14,6 +14,10 @@ private:
 	SDL_Renderer* renderer;
 	SDL_Window* window;
 
+	SDL_DisplayID displayID;
+	SDL_Rect displayBounds;
+	
+
 	SDL_Surface* surface;
 	SDL_Texture* tex;
 
@@ -53,8 +57,12 @@ public:
 				srcRect.push_back(tempRect);
 			}
 		}
-
 		dsRect = { 0, 0, 128, 128 };
+		displayID = SDL_GetDisplayForWindow(&window);
+		SDL_GetDisplayBounds(displayID, &displayBounds);
+		xPos = (displayBounds.w / 2) - 64;
+		yPos = displayBounds.h / 2;
+		SDL_SetWindowPosition(&window, xPos, yPos );
 	}
 	~Entity()
 	{
@@ -75,6 +83,7 @@ public:
 			SDL_RenderPresent(this->renderer);
 		}
 	}
+
 	void displayMultiple(int spriteCount)
 	{
 		if (rotationAngle == 0)
@@ -131,40 +140,33 @@ public:
 		}
 
 	}
-	void updatePosition()
-	{
-		SDL_GetWindowPosition(this->window, &xPos, &yPos);
-	}
+
 	void mouseDrag(Vector2f newPos)
 	{
-		updatePosition();
-		SDL_SetWindowPosition(this->window, newPos.x - 64, newPos.y);
+		xPos = newPos.x - 64;
+		yPos = newPos.y;
+		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 
 	void moveUp()
 	{
-		updatePosition();
 		SDL_SetWindowPosition(this->window, xPos, yPos -= velocity.y);
 	}
 	void moveLeft()
 	{
-		updatePosition();
 		SDL_SetWindowPosition(this->window, xPos -= velocity.x, yPos);
 	}
 	void moveDown()
 	{
-		updatePosition();
 		SDL_SetWindowPosition(this->window, xPos, yPos += velocity.y);
 	}
 	void moveRight()
 	{
-		updatePosition();
 		SDL_SetWindowPosition(this->window, xPos += velocity.x, yPos);
 	}
 
 	void breath(timePoint currentTime)
 	{
-		updateLifetime(currentTime);
 		if (lifetime % 4000 < 1000)
 		{
 			if (lifetime % 1000 < 500) { displaySpriteIndices[0] = 0; }
@@ -183,16 +185,29 @@ public:
 
 	void flail(timePoint currentTime)
 	{
-		updateLifetime(currentTime);
 		if (lifetime % 500 < 250) { displaySpriteIndices[0] = 4; }
 		else if (lifetime % 500 < 500) { displaySpriteIndices[0] = 5; }
 	}
 
 	void sweat(timePoint currentTime)
 	{
-		updateLifetime(currentTime);
 		if (lifetime % 1000 < 500) { displaySpriteIndices[1] = 6; }
 		else if (lifetime % 1000 < 1000) { displaySpriteIndices[1] = 7; }
+	}
+
+	void fall(bool& isFalling, timePoint currentTime)
+	{
+		if (yPos < displayBounds.h - dsRect.h)
+		{
+			if (lifetime % 3 == 0)
+			{
+				moveDown();
+			}
+		}
+		else
+		{
+			isFalling = false;
+		}
 	}
 
 	bool isHeld(SDL_Event& event)
@@ -207,9 +222,20 @@ public:
 	{
 		lifetime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - spawnTime).count();
 	}
+
 	int64_t getLifetime()
 	{
 		return lifetime;
+	}
+
+	Vector2int getPosition()
+	{
+		return { xPos, yPos };
+	}
+
+	float getGround()
+	{
+		return {displayBounds.h - dsRect.h };
 	}
 
 };

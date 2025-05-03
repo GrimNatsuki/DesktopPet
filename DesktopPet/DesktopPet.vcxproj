@@ -102,7 +102,11 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "$(SolutionDir)SDL3\lib\x86\*.dll" "$(OutDir)"
-xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
+xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"
+rmdir /S /Q "$(OutDir)tex"
+mkdir "$(OutDir)tex"
+xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,7 +129,11 @@ xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "$(SolutionDir)SDL3\lib\x86\*.dll" "$(OutDir)"
-xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
+xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"
+rmdir /S /Q "$(OutDir)tex"
+mkdir "$(OutDir)tex"
+xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -144,7 +152,11 @@ xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "$(SolutionDir)SDL3\lib\x86\*.dll" "$(OutDir)"
-xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
+xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"
+rmdir /S /Q "$(OutDir)tex"
+mkdir "$(OutDir)tex"
+xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,7 +179,11 @@ xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "$(SolutionDir)SDL3\lib\x86\*.dll" "$(OutDir)"
-xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"</Command>
+xcopy /Y /D "$(SolutionDir)SDL3_image\lib\x86\*.dll" "$(OutDir)"
+rmdir /S /Q "$(OutDir)tex"
+mkdir "$(OutDir)tex"
+xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
