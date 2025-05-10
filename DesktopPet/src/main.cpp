@@ -47,7 +47,7 @@ main()
 
 	renderer = SDL_CreateRenderer(window, NULL);
 
-	Entity Cartethyia = {"Cartethyia",*window, *renderer, "tex/cartethiyaSpriteMap.png", 4, 2, spawnTime};
+	Entity Cartethyia = {"Cartethyia",*window, *renderer, "tex/CartethiyaSpriteMap.png", 4, 2, spawnTime};
 
 	SDL_Surface* exitButtonSurface = nullptr; 
 	SDL_Texture* exitButtonTexture = nullptr;
@@ -61,7 +61,6 @@ main()
 
 	unsigned int spriteIndex = 0;
 	int spriteLoopcount = 0;
-
 
 	float mouseXPos;
 	float mouseYPos;
@@ -141,7 +140,7 @@ main()
 				}
 			}
 		}
-		/*
+		
 		if (keyBuffer.find(SDLK_W) != keyBuffer.end())
 		{
 			Cartethyia.moveUp();
@@ -158,7 +157,7 @@ main()
 		{
 			Cartethyia.moveRight();
 		}
-		*/
+		
 		if (lastMouseXPos!= mouseXPos || lastMouseYPos!= mouseYPos)
 		{
 			lastMouseXPos = mouseXPos;
@@ -219,9 +218,9 @@ main()
 		renderClear(renderer, 0, 0, 0, 0);
 		
 	}
-
 	SDL_DestroyRenderer(popupRenderer);
 	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
 
 	return 0;
 }

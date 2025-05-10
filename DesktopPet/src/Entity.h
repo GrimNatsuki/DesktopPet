@@ -29,14 +29,17 @@ private:
 	timePoint spawnTime;
 	int64_t lifetime;
 
+	float virtualXPos;
+	float virtualYPos;
 	int xPos;
 	int yPos;
 
-	SDL_FPoint head = { 64, 0 };
-
 	double rotationAngle = 0;
 
-	Vector2int velocity = { 1, 1 };
+	SDL_FPoint head;
+
+	Vector2f velocity = { 0, 0 };
+	float acceleration = 0.0025f;
 
 	int displaySpriteIndices[5] = {0, 0, 0, 0, 0};
 
@@ -58,10 +61,13 @@ public:
 			}
 		}
 		dsRect = { 0, 0, 128, 128 };
+		head = { dsRect.w/2, 0 };
 		displayID = SDL_GetDisplayForWindow(&window);
 		SDL_GetDisplayBounds(displayID, &displayBounds);
-		xPos = (displayBounds.w / 2) - 64;
-		yPos = displayBounds.h / 2;
+		virtualXPos = (displayBounds.w / 2.f) - 64.f;
+		virtualYPos = displayBounds.h / 2.f;
+		xPos = virtualXPos;
+		yPos = virtualYPos;
 		SDL_SetWindowPosition(&window, xPos, yPos );
 	}
 	~Entity()
@@ -141,10 +147,17 @@ public:
 
 	}
 
+	void updateDisplayPosition()
+	{
+		xPos = virtualXPos;
+		yPos = virtualYPos;
+	};
+
 	void mouseDrag(Vector2f newPos)
 	{
-		xPos = newPos.x - 64;
-		yPos = newPos.y;
+		virtualXPos = newPos.x - 64;
+		virtualYPos = newPos.y;
+		updateDisplayPosition();
 		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 
@@ -199,14 +212,14 @@ public:
 	{
 		if (yPos < displayBounds.h - dsRect.h)
 		{
-			if (lifetime % 3 == 0)
-			{
-				moveDown();
-			}
+			if (lifetime % 2 == 0) {moveDown();}
+			velocity.y += acceleration;
+			
 		}
 		else
 		{
 			isFalling = false;
+			velocity.y = 0;
 		}
 	}
 
