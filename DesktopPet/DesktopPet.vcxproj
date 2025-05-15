@@ -187,9 +187,7 @@ xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\VectorStructs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

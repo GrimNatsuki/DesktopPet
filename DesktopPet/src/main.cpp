@@ -56,9 +56,6 @@ main()
 	
 	bool showPopup = false;
 
-	bool CartethyiaIsHeld = false;
-	bool isFalling = true;
-
 	unsigned int spriteIndex = 0;
 	int spriteLoopcount = 0;
 
@@ -94,7 +91,7 @@ main()
 				keyBuffer.erase(event.key.key);
 			}
 
-			if (event.button.button == SDL_BUTTON_LEFT &&CartethyiaIsHeld && !isFalling)
+			if (event.button.button == SDL_BUTTON_LEFT && Cartethyia.isHeld && !Cartethyia.isFalling)
 			{
 				Cartethyia.mouseDrag({ mouseXPos, mouseYPos });
 				if (lastMouseXPos > mouseXPos)
@@ -122,7 +119,7 @@ main()
 				}
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					CartethyiaIsHeld = true;
+					Cartethyia.isHeld = true;
 				}
 				clickedWindow = SDL_GetWindowFromID(event.button.windowID);
 				if (clickedWindow == popup && event.button.button == SDL_BUTTON_LEFT)
@@ -136,28 +133,12 @@ main()
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					CartethyiaIsHeld = false;
+					Cartethyia.isHeld = false;
 				}
 			}
 		}
 		
-		if (keyBuffer.find(SDLK_W) != keyBuffer.end())
-		{
-			Cartethyia.moveUp();
-		}
-		if (keyBuffer.find(SDLK_A) != keyBuffer.end())
-		{
-			Cartethyia.moveLeft();
-		}
-		if (keyBuffer.find(SDLK_S) != keyBuffer.end())
-		{
-			Cartethyia.moveDown();
-		}
-		if (keyBuffer.find(SDLK_D)!=keyBuffer.end())
-		{
-			Cartethyia.moveRight();
-		}
-		
+
 		if (lastMouseXPos!= mouseXPos || lastMouseYPos!= mouseYPos)
 		{
 			lastMouseXPos = mouseXPos;
@@ -169,25 +150,25 @@ main()
 			Cartethyia.smoothResetRotate();
 		}
 
-		if (CartethyiaIsHeld)
+		if (Cartethyia.isHeld)
 		{
 			Cartethyia.sweat(currentTime);
 			Cartethyia.flail(currentTime);
-			Cartethyia.displayMultiple(2);
+			Cartethyia.displayAll();
 		}
 		else
 		{
 			if (Cartethyia.getPosition().y < Cartethyia.getGround())
 			{
-				isFalling = true;
+				Cartethyia.isFalling = true;
 			}
 
-			if (isFalling)
+			if (Cartethyia.isFalling)
 			{
-				Cartethyia.fall(isFalling, currentTime);
+				Cartethyia.fall(currentTime);
 			}
 			Cartethyia.breath(currentTime);
-			Cartethyia.display();
+			Cartethyia.displayAll();
 		}
 
 		Cartethyia.updateLifetime(currentTime);
@@ -198,7 +179,6 @@ main()
 			popupRenderer = SDL_CreateRenderer(popup, NULL);
 			exitButtonSurface = SDL_LoadBMP("tex/exitButton.bmp");
 			exitButtonTexture = SDL_CreateTextureFromSurface(popupRenderer, exitButtonSurface);
-
 		}
 		
 		if (!showPopup && popup)

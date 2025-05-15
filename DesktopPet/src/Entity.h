@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
+#include <algorithm>
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
@@ -9,6 +10,10 @@
 using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 class Entity
 {
+public:
+	bool isHeld = false;
+	bool isFalling = true;
+
 private:
 	const char* name;
 	SDL_Renderer* renderer;
@@ -33,6 +38,7 @@ private:
 	float virtualYPos;
 	int xPos;
 	int yPos;
+	float ground;
 
 	double rotationAngle = 0;
 
@@ -41,13 +47,13 @@ private:
 	Vector2f velocity = { 0, 0 };
 	float acceleration = 0.0025f;
 
-	int displaySpriteIndices[5] = {0, 0, 0, 0, 0};
+	//int layerIndices[5] = {0, 0, 0, 0, 0};
+	std::vector <int> layerIndices = { 0 };
 
 public:
 	Entity(const char* name, SDL_Window& window, SDL_Renderer& renderer, const char* filePath, int spriteRowCount, int spriteColumnCount, timePoint spawnTime)
 		:name(name), window(&window), renderer(&renderer), spawnTime(spawnTime)
 	{
-		//surface = SDL_LoadBMP(filePath);
 		surface = IMG_Load(filePath);
 		tex = SDL_CreateTextureFromSurface(&renderer, surface);
 		for (int i = 0; i < spriteColumnCount;i++)
@@ -62,13 +68,18 @@ public:
 		}
 		dsRect = { 0, 0, 128, 128 };
 		head = { dsRect.w/2, 0 };
+		
 		displayID = SDL_GetDisplayForWindow(&window);
+
 		SDL_GetDisplayBounds(displayID, &displayBounds);
 		virtualXPos = (displayBounds.w / 2.f) - 64.f;
 		virtualYPos = displayBounds.h / 2.f;
 		xPos = virtualXPos;
 		yPos = virtualYPos;
+		ground = displayBounds.h - dsRect.h;
 		SDL_SetWindowPosition(&window, xPos, yPos );
+
+
 	}
 	~Entity()
 	{
@@ -76,44 +87,52 @@ public:
 		SDL_DestroyTexture(tex);
 		SDL_DestroySurface(surface);
 	}
-	void display(int indexBufferIndex = 0)
+
+	void addLayers(int layerCount)
+	{
+		for (int i = 0; i < layerCount;i++)
+		{
+			layerIndices.push_back(0);
+		}
+	}
+
+	void displayAll()
 	{
 		if (rotationAngle == 0)
 		{
-			SDL_RenderTexture(this->renderer, tex, &srcRect[displaySpriteIndices[indexBufferIndex]], &dsRect);
+			for (int i = 0; i < layerIndices.size(); i++)
+			{
+				SDL_RenderTexture(this->renderer, tex, &srcRect[layerIndices[i]], &dsRect);
+			}
 			SDL_RenderPresent(this->renderer);
 		}
 		else
 		{
-			SDL_RenderTextureRotated(renderer, tex, &srcRect[displaySpriteIndices[indexBufferIndex]], &dsRect, rotationAngle, &head, SDL_FLIP_NONE);
+			for (int i = 0; i < layerIndices.size(); i++)
+			{
+				SDL_RenderTextureRotated(renderer, tex, &srcRect[layerIndices[i]], &dsRect, rotationAngle, &head, SDL_FLIP_NONE);
+			}
 			SDL_RenderPresent(this->renderer);
 		}
 	}
 
-	void displayMultiple(int spriteCount)
+	void displayLayer(int layerIndex)
 	{
 		if (rotationAngle == 0)
 		{
-			for (int i = 0; i < spriteCount; i++)
-			{
-				SDL_RenderTexture(this->renderer, tex, &srcRect[displaySpriteIndices[i]], &dsRect);
-			}
+			SDL_RenderTexture(this->renderer, tex, &srcRect[layerIndices[layerIndex]], &dsRect);
 			SDL_RenderPresent(this->renderer);
 		}
 		else
 		{
-			for (int i = 0; i < spriteCount; i++)
-			{
-				SDL_RenderTextureRotated(renderer, tex, &srcRect[displaySpriteIndices[i]], &dsRect, rotationAngle, &head, SDL_FLIP_NONE);
-			}
+			SDL_RenderTextureRotated(renderer, tex, &srcRect[layerIndices[layerIndex]], &dsRect, rotationAngle, &head, SDL_FLIP_NONE);
 			SDL_RenderPresent(this->renderer);
 		}
-
 	}
 
 	void setSprite(int spriteIndex, int indexBufferIndex = 0)
 	{
-		displaySpriteIndices[indexBufferIndex] = spriteIndex;
+		layerIndices[indexBufferIndex] = spriteIndex;
 	}
 
 	void setRotation(double angle)
@@ -180,35 +199,44 @@ public:
 
 	void breath(timePoint currentTime)
 	{
+		if (layerIndices.size() > 1)
+		{
+			layerIndices = { 0 };
+		}
 		if (lifetime % 4000 < 1000)
 		{
-			if (lifetime % 1000 < 500) { displaySpriteIndices[0] = 0; }
-			else if (lifetime % 1000 < 600) { displaySpriteIndices[0] = 1; }
-			else if (lifetime % 1000 < 500) { displaySpriteIndices[0] = 0; }
-			else if (lifetime % 1000 < 800) { displaySpriteIndices[0] = 2; }
-			else if (lifetime % 1000 < 1000) { displaySpriteIndices[0] = 3; }
+			if (lifetime % 1000 < 500) { layerIndices[0] = 0; }
+			else if (lifetime % 1000 < 600) { layerIndices[0] = 1; }
+			else if (lifetime % 1000 < 500) { layerIndices[0] = 0; }
+			else if (lifetime % 1000 < 800) { layerIndices[0] = 2; }
+			else if (lifetime % 1000 < 1000) { layerIndices[0] = 3; }
 		}
 		else
 		{
-			if (lifetime % 1000 < 700) { displaySpriteIndices[0] = 0; }
-			else if (lifetime % 1000 < 800) { displaySpriteIndices[0] = 2; }
-			else if (lifetime % 1000 < 1000) { displaySpriteIndices[0] = 3; }
+			if (lifetime % 1000 < 700) { layerIndices[0] = 0; }
+			else if (lifetime % 1000 < 800) { layerIndices[0] = 2; }
+			else if (lifetime % 1000 < 1000) { layerIndices[0] = 3; }
 		}
 	}
 
 	void flail(timePoint currentTime)
 	{
-		if (lifetime % 500 < 250) { displaySpriteIndices[0] = 4; }
-		else if (lifetime % 500 < 500) { displaySpriteIndices[0] = 5; }
+		if (lifetime % 500 < 250) { layerIndices[0] = 4; }
+		else if (lifetime % 500 < 500) { layerIndices[0] = 5; }
 	}
 
 	void sweat(timePoint currentTime)
 	{
-		if (lifetime % 1000 < 500) { displaySpriteIndices[1] = 6; }
-		else if (lifetime % 1000 < 1000) { displaySpriteIndices[1] = 7; }
+		if (layerIndices.size()<2)
+		{
+			addLayers(1);
+		}
+		if (lifetime % 1000 < 500) { layerIndices[1] = 6; }
+		else if (lifetime % 1000 < 1000) { layerIndices[1] = 7; }
+
 	}
 
-	void fall(bool& isFalling, timePoint currentTime)
+	void fall(timePoint currentTime)
 	{
 		if (yPos < displayBounds.h - dsRect.h)
 		{
@@ -221,15 +249,6 @@ public:
 			isFalling = false;
 			velocity.y = 0;
 		}
-	}
-
-	bool isHeld(SDL_Event& event)
-	{
-		return (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
-	}
-	bool isReleased(SDL_Event& event)
-	{
-		return (event.type == SDL_EVENT_MOUSE_BUTTON_UP);
 	}
 	void updateLifetime(timePoint currentTime)
 	{
@@ -248,7 +267,7 @@ public:
 
 	float getGround()
 	{
-		return {displayBounds.h - dsRect.h };
+		return {ground };
 	}
 
 };
