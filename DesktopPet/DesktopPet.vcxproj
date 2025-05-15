@@ -190,7 +190,6 @@ xcopy /Y /D /E "$(ProjectDir)tex" "$(OutDir)tex"
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\VectorStructs.h" />

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
@@ -13,6 +14,11 @@ class Entity
 public:
 	bool isHeld = false;
 	bool isFalling = true;
+
+	bool isWalkingLeft = false;
+	bool isWalkingRight = false;
+
+	int walkCounter = 0;
 
 private:
 	const char* name;
@@ -39,15 +45,16 @@ private:
 	int xPos;
 	int yPos;
 	float ground;
+	float rightWalkBound;
+	float leftWalkBound;
 
 	double rotationAngle = 0;
 
 	SDL_FPoint head;
 
-	Vector2f velocity = { 0, 0 };
-	float acceleration = 0.0025f;
+	Vector2f velocity = { 1, 0 };
+	const float acceleration = 0.0025f;
 
-	//int layerIndices[5] = {0, 0, 0, 0, 0};
 	std::vector <int> layerIndices = { 0 };
 
 public:
@@ -76,7 +83,11 @@ public:
 		virtualYPos = displayBounds.h / 2.f;
 		xPos = virtualXPos;
 		yPos = virtualYPos;
+
 		ground = displayBounds.h - dsRect.h;
+		leftWalkBound = (displayBounds.w) / 4;
+		rightWalkBound = 3 * (displayBounds.w) / 4;
+
 		SDL_SetWindowPosition(&window, xPos, yPos );
 
 
@@ -168,8 +179,8 @@ public:
 
 	void updateDisplayPosition()
 	{
-		xPos = virtualXPos;
-		yPos = virtualYPos;
+		xPos = static_cast<int>(std::round(virtualXPos));
+		yPos = static_cast<int>(std::round(virtualYPos));
 	};
 
 	void mouseDrag(Vector2f newPos)
@@ -182,19 +193,66 @@ public:
 
 	void moveUp()
 	{
-		SDL_SetWindowPosition(this->window, xPos, yPos -= velocity.y);
+		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 	void moveLeft()
 	{
-		SDL_SetWindowPosition(this->window, xPos -= velocity.x, yPos);
+		virtualXPos -= velocity.x;
+		updateDisplayPosition();
+		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 	void moveDown()
 	{
-		SDL_SetWindowPosition(this->window, xPos, yPos += velocity.y);
+		virtualYPos += velocity.y;
+		updateDisplayPosition();
+		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 	void moveRight()
 	{
-		SDL_SetWindowPosition(this->window, xPos += velocity.x, yPos);
+		virtualXPos += velocity.x;
+		updateDisplayPosition();
+		SDL_SetWindowPosition(this->window, xPos, yPos);
+	}
+
+	void behave_walkLeft(int walkCountIn)
+	{
+		if (!isHeld)
+		{
+			walkCounter = walkCountIn;
+			std::cout << "walkleft" << std::endl;
+			isWalkingLeft = true;
+			isWalkingRight = false;
+			
+		}
+
+	}
+	void behave_walkRight(int walkCountIn)
+	{
+		if (!isHeld)
+		{
+			walkCounter = walkCountIn;
+			std::cout << "walkright" << std::endl;
+			isWalkingLeft = false;
+			isWalkingRight = true;
+		}
+	}
+
+	void behave_stopWalking()
+	{
+		isWalkingLeft = false;
+		isWalkingRight = false;
+		velocity.x = 0;
+	}
+
+	void walkRight()
+	{
+		if (velocity.x < 1) { velocity.x = 1; }
+		if (lifetime % 20 == 0) { moveRight(); }
+	}
+	void walkLeft()
+	{
+		if (velocity.x < 1) { velocity.x = 1; }
+		if (lifetime % 20 == 0) { moveLeft(); }
 	}
 
 	void breath(timePoint currentTime)
@@ -218,6 +276,7 @@ public:
 			else if (lifetime % 1000 < 1000) { layerIndices[0] = 3; }
 		}
 	}
+
 
 	void flail(timePoint currentTime)
 	{
@@ -249,6 +308,7 @@ public:
 			isFalling = false;
 			velocity.y = 0;
 		}
+		
 	}
 	void updateLifetime(timePoint currentTime)
 	{
@@ -267,7 +327,15 @@ public:
 
 	float getGround()
 	{
-		return {ground };
+		return {ground};
+	}
+	float getLeftWalkBound()
+	{
+		return { leftWalkBound };
+	}
+	float getRightWalkBound()
+	{
+		return { rightWalkBound };
 	}
 
 };

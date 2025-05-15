@@ -2,13 +2,16 @@
 #include <unordered_set>
 #include <chrono>
 #include <vector>
+#include <random>
 #include <Windows.h>
+
 #include "SDL3/SDL.h"
 #include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
 #include "Entity.h"
 
 using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
+static std::mt19937 gen(std::random_device{}());
 
 void renderClear(SDL_Renderer* renderer, const int& r, const int& g, const int& b, const int& a)
 {
@@ -16,8 +19,19 @@ void renderClear(SDL_Renderer* renderer, const int& r, const int& g, const int& 
 	SDL_RenderClear(renderer);
 }
 
-int 
-main()
+int intRNG()
+{
+	std::uniform_int_distribution<> dist(1, 100);
+	return dist(gen);
+}
+
+float floatRNG()
+{
+	std::uniform_real_distribution<float> dist(0.f, 1.f);
+	return dist(gen);
+}
+
+int main()
 //WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -28,7 +42,7 @@ main()
 
 	timePoint spawnTime = std::chrono::steady_clock::now();
 	timePoint currentTime;
-	int64_t elapsedTimeMilliseconds;
+	static timePoint lastTrigger = spawnTime;
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;
@@ -85,6 +99,7 @@ main()
 				{
 					keyBuffer.insert(event.key.key);
 				}
+				
 			}
 			if (event.type == SDL_EVENT_KEY_UP)
 			{
@@ -137,7 +152,35 @@ main()
 				}
 			}
 		}
-		
+
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTrigger).count() > 1000)
+		{
+			lastTrigger = currentTime;
+			int randomInt = intRNG();
+			int randomWalkCount = intRNG() % 3 + 1;
+
+			if (Cartethyia.walkCounter == 0)
+			{
+				if (randomInt < 20 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight 
+				&& Cartethyia.getPosition().x > Cartethyia.getLeftWalkBound())
+				{
+					Cartethyia.behave_walkLeft(randomWalkCount);
+				}
+				if (randomInt > 20 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight
+				&& Cartethyia.getPosition().x < Cartethyia.getRightWalkBound())
+				{
+					Cartethyia.behave_walkRight(randomWalkCount);
+				}
+			}
+			else if (Cartethyia.walkCounter > 0)
+			{
+				Cartethyia.walkCounter -= 1;
+				if (Cartethyia.walkCounter == 0)
+				{
+					Cartethyia.behave_stopWalking();
+				}
+			}
+		}
 
 		if (lastMouseXPos!= mouseXPos || lastMouseYPos!= mouseYPos)
 		{
@@ -152,12 +195,14 @@ main()
 
 		if (Cartethyia.isHeld)
 		{
+			Cartethyia.behave_stopWalking();
 			Cartethyia.sweat(currentTime);
 			Cartethyia.flail(currentTime);
 			Cartethyia.displayAll();
 		}
 		else
 		{
+
 			if (Cartethyia.getPosition().y < Cartethyia.getGround())
 			{
 				Cartethyia.isFalling = true;
@@ -167,7 +212,21 @@ main()
 			{
 				Cartethyia.fall(currentTime);
 			}
-			Cartethyia.breath(currentTime);
+
+			if (Cartethyia.isWalkingLeft)
+			{
+				Cartethyia.walkLeft();
+			}
+			if (Cartethyia.isWalkingRight)
+			{
+				Cartethyia.walkRight();
+			}
+
+			else
+			{
+				Cartethyia.breath(currentTime);
+			}
+
 			Cartethyia.displayAll();
 		}
 
