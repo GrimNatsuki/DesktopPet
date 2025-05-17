@@ -13,7 +13,8 @@ class Entity
 {
 public:
 	bool isHeld = false;
-	bool isFalling = true;
+	bool isFloating = true;
+	bool isDrowning = false;
 
 	bool isWalkingLeft = false;
 	bool isWalkingRight = false;
@@ -85,8 +86,8 @@ public:
 		yPos = virtualYPos;
 
 		ground = displayBounds.h - dsRect.h;
-		leftWalkBound = (displayBounds.w) / 4;
-		rightWalkBound = 3 * (displayBounds.w) / 4;
+		leftWalkBound = (displayBounds.w) / 5;
+		rightWalkBound = 4 * (displayBounds.w) / 5;
 
 		SDL_SetWindowPosition(&window, xPos, yPos );
 
@@ -193,6 +194,8 @@ public:
 
 	void moveUp()
 	{
+		virtualYPos -= velocity.y;
+		updateDisplayPosition();
 		SDL_SetWindowPosition(this->window, xPos, yPos);
 	}
 	void moveLeft()
@@ -219,7 +222,6 @@ public:
 		if (!isHeld)
 		{
 			walkCounter = walkCountIn;
-			std::cout << "walkleft" << std::endl;
 			isWalkingLeft = true;
 			isWalkingRight = false;
 			
@@ -231,7 +233,6 @@ public:
 		if (!isHeld)
 		{
 			walkCounter = walkCountIn;
-			std::cout << "walkright" << std::endl;
 			isWalkingLeft = false;
 			isWalkingRight = true;
 		}
@@ -305,11 +306,27 @@ public:
 		}
 		else
 		{
-			isFalling = false;
+			isFloating = false;
 			velocity.y = 0;
 		}
 		
 	}
+
+	void goFloat(timePoint currentTime)
+	{
+		if (yPos > displayBounds.h - dsRect.h)
+		{
+			if (lifetime % 2 == 0) { moveUp(); }
+			velocity.y += acceleration;
+
+		}
+		else
+		{
+			isDrowning = false;
+			velocity.y = 0;
+		}
+	}
+
 	void updateLifetime(timePoint currentTime)
 	{
 		lifetime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - spawnTime).count();

@@ -32,7 +32,7 @@ float floatRNG()
 }
 
 int main()
-//WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
@@ -106,7 +106,7 @@ int main()
 				keyBuffer.erase(event.key.key);
 			}
 
-			if (event.button.button == SDL_BUTTON_LEFT && Cartethyia.isHeld && !Cartethyia.isFalling)
+			if (event.button.button == SDL_BUTTON_LEFT && Cartethyia.isHeld && !Cartethyia.isFloating)
 			{
 				Cartethyia.mouseDrag({ mouseXPos, mouseYPos });
 				if (lastMouseXPos > mouseXPos)
@@ -161,12 +161,12 @@ int main()
 
 			if (Cartethyia.walkCounter == 0)
 			{
-				if (randomInt < 20 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight 
+				if (randomInt < 50 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight 
 				&& Cartethyia.getPosition().x > Cartethyia.getLeftWalkBound())
 				{
 					Cartethyia.behave_walkLeft(randomWalkCount);
 				}
-				if (randomInt > 20 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight
+				if (randomInt > 50 && !Cartethyia.isWalkingLeft && !Cartethyia.isWalkingRight
 				&& Cartethyia.getPosition().x < Cartethyia.getRightWalkBound())
 				{
 					Cartethyia.behave_walkRight(randomWalkCount);
@@ -205,23 +205,31 @@ int main()
 
 			if (Cartethyia.getPosition().y < Cartethyia.getGround())
 			{
-				Cartethyia.isFalling = true;
+				Cartethyia.isFloating = true;
+			}
+			else if (Cartethyia.getPosition().y > Cartethyia.getGround())
+			{
+				Cartethyia.isDrowning = true;
 			}
 
-			if (Cartethyia.isFalling)
+			if (Cartethyia.isFloating)
 			{
 				Cartethyia.fall(currentTime);
 			}
+			else if (Cartethyia.isDrowning)
+			{
+				Cartethyia.goFloat(currentTime);
+			}
+
 
 			if (Cartethyia.isWalkingLeft)
 			{
 				Cartethyia.walkLeft();
 			}
-			if (Cartethyia.isWalkingRight)
+			else if (Cartethyia.isWalkingRight)
 			{
 				Cartethyia.walkRight();
 			}
-
 			else
 			{
 				Cartethyia.breath(currentTime);
