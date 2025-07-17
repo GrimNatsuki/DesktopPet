@@ -6,6 +6,7 @@
 #include <Windows.h>
 
 #include "SDL3/SDL.h"
+#include "SDL3/SDL_main.h"
 #include "SDL3_image/SDL_image.h"
 #include "VectorStructs.h"
 #include "Entity.h"
@@ -31,15 +32,17 @@ float floatRNG()
 	return dist(gen);
 }
 
-int main()
-//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+SDL_AppResult SDL_AppInitVoid(void** appstate, int argc, char* argv[])
 {
+	SDL_SetAppMetadata("Cartethyia Pixel Pet", "0.1", "com.grimnatsuki");
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
+}
 
-
+int SDL_main(int argc, char *argv[])
+{
 	timePoint spawnTime = std::chrono::steady_clock::now();
 	timePoint currentTime;
 	static timePoint lastTrigger = spawnTime;
@@ -111,11 +114,11 @@ int main()
 				Cartethyia.mouseDrag({ mouseXPos, mouseYPos });
 				if (lastMouseXPos > mouseXPos)
 				{
-					Cartethyia.smoothRotate(-12);
+					Cartethyia.smoothRotate(-45);
 				}
 				else if (lastMouseXPos < mouseXPos)
 				{
-					Cartethyia.smoothRotate(12);
+					Cartethyia.smoothRotate(45);
 				}
 				showPopup = false;
 			}
