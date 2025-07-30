@@ -1,4 +1,4 @@
-# DesktopPet
+# DesktopPet (Discontinued)
 
 This project is DISCONTINUED
 
